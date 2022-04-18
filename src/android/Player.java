@@ -26,6 +26,8 @@ package co.frontyard.cordova.plugin.exoplayer;
 import android.util.Log;
 import android.app.*;
 import android.content.*;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.media.*;
 import android.net.*;
 import android.os.*;
@@ -202,13 +204,37 @@ public class Player {
         }
     };
 
-    public void createPlayer() {
+    public void createPlayer(CordovaWebView cordovaWebView) {
         if (!config.isAudioOnly()) {
-            createDialog();
+            if (config.isRunBehindWebViewMode()) {
+                createBehindWebView(cordovaWebView);
+            } else {
+                createDialog();
+            }
         }
         preparePlayer(config.getUri());
     }
 
+    public void createBehindWebView(CordovaWebView cordovaWebView){
+        webView.getView().setBackgroundColor(Color.TRANSPARENT);
+
+        FrameLayout wrapperFrameLayout = (FrameLayout) cordovaWebView.getView().getParent();
+        LinearLayout linearLayout = new LinearLayout(activity);
+        linearLayout.setLayoutParams(new LinearLayout.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
+        wrapperFrameLayout.addView(linearLayout, 0);
+
+        FrameLayout mainLayout = LayoutProvider.getMainLayout(this.activity);
+        exoView = LayoutProvider.getExoPlayerView(this.activity, config);
+        exoView.setControllerVisibilityListener(playbackControlVisibilityListener);
+        mainLayout.addView(exoView);
+
+        linearLayout.addView(mainLayout);
+        exoView.requestFocus();
+        exoView.setOnTouchListener(onTouchListener);
+
+        LayoutProvider.setupController(exoView, activity, config.getController());
+    }
+ 
     public void createDialog() {
         dialog = new Dialog(this.activity, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         dialog.setOnKeyListener(onKeyListener);
