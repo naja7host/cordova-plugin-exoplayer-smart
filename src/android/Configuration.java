@@ -97,4 +97,8 @@ public class Configuration {
     public boolean getShowBuffering() {
         return config.optBoolean("showBuffering");
     }
+ 
+    public boolean isRunBehindWebViewMode() {
+        return config.optBoolean("runBehindWebView");
+    }
 }
